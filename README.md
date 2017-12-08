@@ -4,6 +4,6 @@
 
 Preserved for fun.
 
-### SPOILER ALERT ###
+### SPOILER ALERT! ###
 You might not want to look at these if you have not yet solved the puzzles yourself. :)
 
