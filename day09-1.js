@@ -181,11 +181,12 @@ function solvePuzzle() {
     encoding: 'utf8'
   });
 
+  const answer = solve(puzzleInput);
   console.log('* * ANSWER * *');
-  console.log(solve(puzzleInput));
+  console.log(answer);
   console.log('* * * * * * * *');
 }
 
 
-runTests();
-//solvePuzzle();
+//runTests();
+solvePuzzle();
