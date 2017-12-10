@@ -5,7 +5,7 @@ const util = require('util');
 
 class Node {
   constructor(string) {
-    console.log('---------------- constructing node: ', string);
+    console.log('  constructing node: ', string);
 
     this.nodes = [];
 
@@ -14,10 +14,10 @@ class Node {
     let start = undefined;
     for (let i = 1; i < string.length; i++) {
       const char = string[i];
-      console.log(`index ${i}, char ${char}`);
+      //console.log(`   index ${i}, char ${char}`);
       if (char === '{') {
         opens++;
-        if(!start){
+        if (!start) {
           start = i;
         }
       }
@@ -25,10 +25,10 @@ class Node {
         closes++;
       }
       if (char !== ',') {
-        console.log(`  opens ${opens}, closes ${closes}`);
+        // console.log(`    opens ${opens}, closes ${closes}`);
         if (closes === opens) {
-          console.log(`   adding: start ${start}, end ${i}`);
-          this.nodes.push(new Node(string.substring(start, i+1)));
+          // console.log(`     adding: start ${start}, end ${i}`);
+          this.nodes.push(new Node(string.substring(start, i + 1)));
           start = undefined;
           closes = opens = 0;
         }
@@ -38,8 +38,26 @@ class Node {
   }
 }
 
-function clean(input){
-
+function clean(input) {
+  const output = [];
+  let garbage = false;
+  let prevChar;
+  for (let i = 0; i < input.length; i++) {
+    const char = input[i];
+    if (prevChar !== '!') {
+      if (char === '<') {
+        garbage = true;
+      }
+      if (!garbage) {
+        output.push(char);
+      }
+      if (char === '>') {
+        garbage = false;
+      }
+    }
+    prevChar = char;
+  }
+  return ''.concat(...output);
 }
 
 function solve(input) {
@@ -59,7 +77,7 @@ function runTests() {
 
   const testClean = function (input, expected) {
     test(`clean`, assert => {
-      const msg = `clean with ${input} should return ${expected}`;
+      const msg = `clean with ${input} should return ${expected || '""'}`;
       const value = clean(input);
       assert.equal(value, expected, msg);
       assert.end();
@@ -100,7 +118,22 @@ function runTests() {
     }]
   });
 
-  //testClean('{<{},{},{{}}>}', '{}');
+  testNodeCtor('{,,,}', {
+    nodes: []
+  });
+
+  testClean('<>', '');
+  testClean('<random characters>', '');
+  testClean('<<<<>', '');
+  testClean('<{!>}>', '');
+  testClean('<!!>', '');
+  testClean('<!!!>>', '');
+  testClean('<{o"i!a,<{i<a>', '');
+
+  testClean('{<{},{},{{}}>}', '{}');
+  testClean('{<a>,<a>,<a>,<a>}', '{,,,}');
+  testClean('{{<a>},{<a>},{<a>},{<a>}}', '{{},{},{},{}}');
+  testClean('{{<!>},{<!>},{<!>},{<a>}}', '{{}}');
 
 
 }
