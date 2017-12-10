@@ -33,35 +33,54 @@ class Node {
           closes = opens = 0;
         }
       }
-
     }
+  }
+
+  getScore(parentVal) {
+    const initialScore = (parentVal || 0) + 1;
+    let myScore = initialScore;
+    this.nodes.forEach(node => {
+      myScore += node.getScore(initialScore);
+    });
+    return myScore;
   }
 }
 
 function clean(input) {
   const output = [];
   let garbage = false;
-  let prevChar;
+  let skip = false;
   for (let i = 0; i < input.length; i++) {
     const char = input[i];
-    if (prevChar !== '!') {
+    //console.log('char', char);
+    if (!skip) {
+
       if (char === '<') {
         garbage = true;
       }
       if (!garbage) {
+        //console.log(`pushing index ${i} (${char})`);
         output.push(char);
       }
       if (char === '>') {
         garbage = false;
       }
     }
-    prevChar = char;
+    if ((!skip) && (char === '!')) {
+      skip = true;
+    } else {
+      skip = false;
+    }
+
+
   }
   return ''.concat(...output);
 }
 
 function solve(input) {
-
+  const cleaned = clean(input);
+  const node = new Node(cleaned);
+  return node.getScore();
 }
 
 function runTests() {
@@ -79,6 +98,15 @@ function runTests() {
     test(`clean`, assert => {
       const msg = `clean with ${input} should return ${expected || '""'}`;
       const value = clean(input);
+      assert.equal(value, expected, msg);
+      assert.end();
+    });
+  };
+
+  const testSolve = function (input, expected) {
+    test(`solve`, assert => {
+      const msg = `solve with ${input} should return ${expected}`;
+      const value = solve(input);
       assert.equal(value, expected, msg);
       assert.end();
     });
@@ -130,11 +158,21 @@ function runTests() {
   testClean('<!!!>>', '');
   testClean('<{o"i!a,<{i<a>', '');
 
+
   testClean('{<{},{},{{}}>}', '{}');
   testClean('{<a>,<a>,<a>,<a>}', '{,,,}');
   testClean('{{<a>},{<a>},{<a>},{<a>}}', '{{},{},{},{}}');
   testClean('{{<!>},{<!>},{<!>},{<a>}}', '{{}}');
 
+  testClean('{{<!!>},{<!!>},{<!!>},{<!!>}}', '{{},{},{},{}}');
+
+  testSolve('{}', 1);
+  testSolve('{{{}}}', 6);
+  testSolve('{{},{}}', 5);
+  testSolve('{{{},{},{{}}}}', 16);
+  testSolve('{<a>,<a>,<a>,<a>}', 1);
+  testSolve('{{<ab>},{<ab>},{<ab>},{<ab>}}', 9);
+  testSolve('{{<!!>},{<!!>},{<!!>},{<!!>}}', 9);
 
 }
 
