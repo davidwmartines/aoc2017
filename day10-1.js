@@ -4,7 +4,32 @@ const fs = require('fs');
 const _ = require('lodash');
 const util = require('util');
 
-function solve(input) {
+function solve(listLength, input) {
+
+  const list = new Int32Array(listLength);
+  for (let i = 0; i < listLength; i++) {
+    list[i] = i;
+  }
+  console.log(`list: ${list}`);
+
+  const lengths = input.split(',').map(c => parseInt(c));
+  console.log(`lengths: ${lengths}`);
+
+  let options = {
+    array: list,
+    position: 0,
+    skip: 0
+  };
+
+  lengths.forEach(length => {
+    options.length = length;
+    options = knot(options);
+    //console.log(`${util.inspect(options)}`);
+  });
+
+  console.log(`0: ${options.array[0]}, 1: ${options.array[1]}`);
+
+  return options.array[0] * options.array[1];
 
 }
 
@@ -106,20 +131,24 @@ function runTests() {
     skip: 4
   });
 
+  test(`solve`, assert => {
+    const result = solve(5, '3,4,1,5');
+    assert.equal(result, 12, 'solve should return 12');
+    assert.end();
+  });
+
 }
 
 function solvePuzzle() {
 
-  const puzzleInput = fs.readFileSync('./day10.txt', {
-    encoding: 'utf8'
-  });
+  const puzzleInput = '129,154,49,198,200,133,97,254,41,6,2,1,255,0,191,108';
+  const answer = solve(256, puzzleInput);
 
-  const answer = solve(puzzleInput);
   console.log('* * ANSWER * *');
   console.log(answer);
   console.log('* * * * * * * *');
 }
 
 
-runTests();
-//solvePuzzle();
+//runTests();
+solvePuzzle();
