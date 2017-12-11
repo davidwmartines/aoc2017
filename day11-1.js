@@ -47,8 +47,64 @@ function move(start, dir) {
   return dest;
 }
 
-function solve(input) {
+function followPath(start, path) {
+  const moves = path.split(',');
+  let dest;
+  moves.forEach(m => {
+    dest = move(dest || start, m);
+    //console.log(`moved to ${util.inspect(dest)}`);
+  });
+  return dest;
+}
 
+function determineDirection(from, to) {
+  let dir;
+  if (from.x === to.x && from.y < to.y) {
+    dir = 'n';
+  }
+  if (from.x < to.x && from.y === to.y) {
+    dir = 'e';
+  }
+  if (from.x === to.x && from.y > to.y) {
+    dir = 's';
+  }
+  if (from.x > to.x && from.y === to.y) {
+    dir = 'w';
+  }
+  if (from.x < to.x && from.y < to.y) {
+    dir = 'ne';
+  }
+
+  if (from.x > to.x && from.y > to.y) {
+    dir = 'sw';
+  }
+  if (from.x > to.x && from.y < to.y) {
+    dir = 'nw';
+  }
+  if (from.x < to.x && from.y > to.y) {
+    dir = 'se';
+  }
+
+  return dir;
+}
+
+function calculateDistance(from, to) {
+  let distance = 0;
+  let current = from;
+  while (current.x !== to.x || current.y !== to.y) {
+    const dir = determineDirection(current, to);
+    //console.log(`${util.inspect(current)} to ${util.inspect(to)} determined to be ${dir}`);
+    current = move(current, dir);
+    //console.log(`current now ${util.inspect(current)}`);
+    distance++;
+  }
+  return distance;
+}
+
+function solve(input) {
+  const start = {x:0,y:0};
+  const location = followPath(start, input);
+  return calculateDistance(location, start);
 }
 
 function runTests() {
@@ -200,21 +256,203 @@ function runTests() {
     });
   }
 
-  testMovement();
+  function testFollowPath() {
 
+    function testFollow(start, path, dest) {
+      test(`followPath`, assert => {
+        const msg = `followPath ${path} from ${util.inspect(start)} should arrive at ${util.inspect(dest)}`;
+        const value = followPath(start, path);
+        assert.deepEqual(value, dest, msg);
+        assert.end();
+      });
+    }
+
+    testFollow({
+      x: 0,
+      y: 0
+    }, 'ne,ne,ne', {
+      x: 3,
+      y: 3
+    });
+
+    testFollow({
+      x: 0,
+      y: 0
+    }, 'ne,ne,sw,sw', {
+      x: 0,
+      y: 0
+    });
+
+    testFollow({
+      x: 0,
+      y: 0
+    }, 'ne,ne,s,s', {
+      x: 2,
+      y: -2
+    });
+
+    testFollow({
+      x: 0,
+      y: 0
+    }, 'se,sw,se,sw,sw', {
+      x: -1,
+      y: -5
+    });
+
+  }
+
+  function testDetermineDirection() {
+    function testDir(from, to, expected) {
+      test(`determineDirection`, assert => {
+        const msg = `direction from ${util.inspect(from)} to ${util.inspect(to)} should be ${expected}.`;
+        const value = determineDirection(from, to);
+        assert.equal(value, expected, msg);
+        assert.end();
+      });
+
+    }
+
+    testDir({
+      x: 0,
+      y: -1
+    }, {
+      x: 0,
+      y: 0
+    }, 'n');
+
+    testDir({
+      x: 0,
+      y: 1
+    }, {
+      x: 0,
+      y: 0
+    }, 's');
+
+    testDir({
+      x: -1,
+      y: 0
+    }, {
+      x: 0,
+      y: 0
+    }, 'e');
+
+    testDir({
+      x: 1,
+      y: 0
+    }, {
+      x: 0,
+      y: 0
+    }, 'w');
+
+    testDir({
+      x: -1,
+      y: -1
+    }, {
+      x: 0,
+      y: 0
+    }, 'ne');
+
+    testDir({
+      x: 1,
+      y: -1
+    }, {
+      x: 0,
+      y: 0
+    }, 'nw');
+
+    testDir({
+      x: 1,
+      y: 1
+    }, {
+      x: 0,
+      y: 0
+    }, 'sw');
+
+    testDir({
+      x: -1,
+      y: 1
+    }, {
+      x: 0,
+      y: 0
+    }, 'se');
+
+
+  }
+
+  function testCalculateDistance() {
+
+    function testCalc(from, to, expected) {
+      test(`calculateDistance`, assert => {
+        const msg = `distance from ${util.inspect(from)} to ${util.inspect(to)} should be ${expected} moves.`;
+        const value = calculateDistance(from, to);
+        assert.deepEqual(value, expected, msg);
+        assert.end();
+      });
+    }
+
+    const to = {
+      x: 0,
+      y: 0
+    };
+
+    testCalc({
+      x: 0,
+      y: 0
+    }, to, 0);
+
+    testCalc({
+      x: 3,
+      y: 3
+    }, to, 3);
+
+    testCalc({
+      x: 2,
+      y: -2
+    }, to, 2);
+
+    testCalc({
+      x: -1,
+      y: -5
+    }, to, 3);
+
+  }
+
+  function testSolve() {
+
+    function solveTest(input, expected) {
+      test('solve', assert => {
+        const msg = `solve ${input} should be ${expected}`;
+        const value = solve(input);
+        assert.equal(value, expected, msg);
+        assert.end();
+      });
+    }
+
+    solveTest('ne,ne,ne', 3);
+    solveTest('ne,ne,sw,sw', 0);
+    solveTest('ne,ne,s,s', 2);
+    solveTest('se,sw,se,sw,sw', 3);
+  }
+
+  testMovement();
+  testFollowPath();
+  testDetermineDirection();
+  testCalculateDistance();
+  testSolve();
 
 }
 
 function solvePuzzle() {
-  const puzzleInput = fs.readFileSync('./day0.txt', {
+  const puzzleInput = fs.readFileSync('./day11.txt', {
     encoding: 'utf8'
   });
 
+  const answer = solve(puzzleInput);
   console.log('* * ANSWER * *');
-  console.log(solve(puzzleInput));
+  console.log(answer);
   console.log('* * * * * * * *');
 }
 
 
-runTests();
-//solvePuzzle();
+//runTests();
+solvePuzzle();
